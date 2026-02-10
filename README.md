@@ -264,4 +264,4 @@ Created with ❤️ for the Muslim community
 
 **Barakallahu fiikum!** 🕌✨
 
-Made with Claude AI Assistant
+PT. LUMENSIA SMAT TECHNOLOGIE 2025
