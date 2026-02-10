@@ -264,4 +264,4 @@ Created with ❤️ for the Muslim community
 
 **Barakallahu fiikum!** 🕌✨
 
-PT. LUMENSIA SMAT TECHNOLOGIE 2025
+PT. LUMENSIA SMART TECHNOLOGIE 2026
