@@ -2,68 +2,84 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-  />
-  <meta name="description" content="LUME Tasbih - Aplikasi tasbih digital Pi Network" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0f172a" />
-  <title>🕌 LUME Tasbih</title>
-
-  <!-- Pi SDK (WAJIB) -->
+  <title>LUME Tasbih</title>
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; background: linear-gradient(180deg, #0f172a, #020617); color: white; text-align: center; }
+    header { padding: 40px 20px; }
+    button { width: 90%; max-width: 400px; padding: 16px; font-size: 16px; border-radius: 12px; border: none; cursor: pointer; background: #2563eb; color: white; }
+    button:disabled { opacity: 0.6; }
+    section { margin-top: 30px; }
+    #spinner { display: none; margin: 20px; }
+  </style>
 </head>
-
 <body>
-
   <header>
     <h1>🕌 LUME Tasbih</h1>
-    <p id="status">Assalamu'alaikum</p>
-    <p id="userInfo" style="display:none;"></p>
+    <p id="status">Assalamu’alaikum</p>
   </header>
-
   <section id="loginSection">
-    <button id="loginBtn" onclick="login()">
-      🔐 Login dengan Pi Network
-    </button>
-    <p>Login untuk membuka fitur</p>
+    <button id="loginBtn">🔐 Login dengan Pi Network</button>
+    <p>WAJIB dibuka lewat Pi Browser</p>
+    <div id="spinner">⏳ Loading...</div>
   </section>
-
   <section id="modeSection" style="display:none;">
-    <button onclick="startFree()">🆓 Tasbih Gratis</button>
-    <button onclick="startPremium()">⭐ LUME+ Premium</button>
+    <p>✅ Login berhasil</p>
   </section>
 
-  <section id="tasbihSection" style="display:none;">
-    <h2 id="count">0</h2>
-    <button onclick="tap()">➕ Zikir</button>
-    <button onclick="reset()">🔄 Reset</button>
-  </section>
-
-  <!-- Init Pi SDK (HARUS DI AKHIR BODY) -->
   <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    if (!window.Pi) {
-      alert("Harus dibuka lewat Pi Browser");
-      return;
+    let piReady = false;
+
+    // Init dengan delay dan tanpa sandbox (prod)
+    function initPi() {
+      if (window.Pi) {
+        Pi.init({ version: "2.0" });  // Tanpa sandbox untuk prod [web:20]
+        piReady = true;
+        console.log("✅ Pi SDK initialized");
+        document.getElementById("status").innerText = "Siap login Pi Network";
+      } else {
+        alert("❌ Buka dari Pi Browser! Update Pi App jika stuck.");
+      }
     }
 
-    Pi.init({
-      version: "2.0",
-      sandbox: true   // ✅ WAJIB SELAMA TESTNET
+    // Tunggu SDK load
+    window.addEventListener('load', initPi);
+
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      if (!piReady || !window.Pi) {
+        alert("Pi SDK belum siap. Refresh halaman.");
+        return;
+      }
+
+      const btn = document.getElementById("loginBtn");
+      const status = document.getElementById("status");
+      const spinner = document.getElementById("spinner");
+
+      btn.disabled = true;
+      status.innerText = "Meminta login Pi… JANGAN tutup popup!";
+      spinner.style.display = "block";
+
+      Pi.authenticate(
+        ["username"],  // Scope minimal [web:20]
+        (auth) => {
+          console.log("✅ LOGIN SUCCESS", auth);
+          status.innerText = "Assalamu’alaikum, " + auth.user.username;
+          document.getElementById("loginSection").style.display = "none";
+          document.getElementById("modeSection").style.display = "block";
+          spinner.style.display = "none";
+        },
+        (err) => {
+          console.error("❌ LOGIN ERROR", err);
+          const msg = err.code === "No minimal requirements" ? "Update Pi Browser!" : "Login dibatalkan/gagal";
+          alert("❌ " + msg);
+          status.innerText = "Assalamu’alaikum";
+          btn.disabled = false;
+          spinner.style.display = "none";
+        }
+      );
     });
-
-    console.log("✅ Pi SDK siap (TESTNET)");
-  });
-</script>
-
-
-  <!-- App Scripts -->
-  <script src="app.js"></script>
-  <script src="tasbih.js"></script>
-
+  </script>
 </body>
 </html>
