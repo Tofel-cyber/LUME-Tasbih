@@ -45,21 +45,21 @@
 
   <!-- Init Pi SDK (HARUS DI AKHIR BODY) -->
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      if (!window.Pi) {
-        console.error("❌ Pi SDK tidak tersedia");
-        alert("Harus dibuka lewat Pi Browser");
-        return;
-      }
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!window.Pi) {
+      alert("Harus dibuka lewat Pi Browser");
+      return;
+    }
 
-      Pi.init({
-        version: "2.0",
-        sandbox: false // ✅ DOMAIN SUDAH VERIFIED
-      });
-
-      console.log("✅ Pi SDK siap");
+    Pi.init({
+      version: "2.0",
+      sandbox: true   // ✅ WAJIB SELAMA TESTNET
     });
-  </script>
+
+    console.log("✅ Pi SDK siap (TESTNET)");
+  });
+</script>
+
 
   <!-- App Scripts -->
   <script src="app.js"></script>
