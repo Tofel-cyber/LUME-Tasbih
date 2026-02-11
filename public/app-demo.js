@@ -1,11 +1,9 @@
-// ===== LUME Tasbih - Production Version =====
-// Backend: https://lume-tasbih.vercel.app/api/payments
+// ===== DEMO VERSION - No Pi SDK Required =====
+// This is a demo version that works without Pi Network
 
 let user = null;
 let premium = false;
 let paymentId = null;
-
-const BACKEND_URL = 'https://lume-tasbih.vercel.app/api/payments';
 
 // Load saved state
 function loadState() {
@@ -48,16 +46,18 @@ function saveState() {
 window.addEventListener('DOMContentLoaded', () => {
   loadState();
   
+  // Check if already logged in
   if (user) {
     showModeSection();
   }
   
+  // Initialize stats
   if (typeof initStats === 'function') {
     initStats();
   }
 });
 
-// ===== Login Function =====
+// ===== Demo Login (No Pi SDK) =====
 function login() {
   const loginBtn = document.getElementById('loginBtn');
   
@@ -70,23 +70,21 @@ function login() {
   showLoading(true);
   loginBtn.disabled = true;
   
-  Pi.authenticate(
-    ["username", "payments"],
-    (auth) => {
-      user = auth.user;
-      saveState();
-      updateUserUI();
-      showModeSection();
-      showToast(`Selamat datang, ${user.username}! 🎉`, 'success');
-      showLoading(false);
-    },
-    (error) => {
-      console.error('Login error:', error);
-      showToast('Login gagal. Silakan coba lagi.', 'error');
-      showLoading(false);
-      loginBtn.disabled = false;
-    }
-  );
+  // Simulate login delay
+  setTimeout(() => {
+    // Create demo user
+    user = {
+      uid: 'demo_' + Date.now(),
+      username: 'DemoUser' + Math.floor(Math.random() * 1000),
+      publicKey: 'demo_public_key_' + Date.now()
+    };
+    
+    saveState();
+    updateUserUI();
+    showModeSection();
+    showToast(`Selamat datang, ${user.username}! 🎉`, 'success');
+    showLoading(false);
+  }, 1000);
 }
 
 // ===== Update User UI =====
@@ -97,9 +95,10 @@ function updateUserUI() {
   
   if (user) {
     status.innerText = `Assalamu'alaikum, ${user.username}`;
-    userInfo.innerText = `👤 ${user.username}`;
+    userInfo.innerText = `👤 ${user.username} (Demo)`;
     userInfo.style.display = 'block';
     
+    // Hide login button
     if (loginSection) {
       loginSection.style.display = 'none';
     }
@@ -113,7 +112,7 @@ function showModeSection() {
   if (premium) {
     showPremiumBadge();
     document.getElementById('lumeBtn').innerHTML = `
-      <span class="btn-icon">✅</span> LUME+ Aktif
+      <span class="btn-icon">✅</span> LUME+ Aktif (Demo)
       <small>Semua fitur premium tersedia</small>
     `;
   }
@@ -125,7 +124,7 @@ function startFree() {
   showToast('Mode Gratis aktif! 🆓', 'success');
 }
 
-// ===== Start LUME+ Premium =====
+// ===== Start LUME+ Premium (DEMO - No Payment) =====
 function startLume() {
   if (!user) {
     showToast('Login dulu untuk mengakses LUME+', 'error');
@@ -139,144 +138,38 @@ function startLume() {
     return;
   }
   
-  if (!confirm('Aktifkan LUME+ Premium?\n\n💰 Biaya: 0.001 Pi\n\nFitur:\n✅ Adzan Otomatis 5 Waktu\n✅ Statistik Lengkap\n✅ Custom Themes\n✅ Cloud Sync\n✅ Donasi Sosial Auto')) {
+  // Demo mode - no payment required
+  if (!confirm('🎭 DEMO MODE\n\nAktifkan LUME+ Premium GRATIS?\n\n(Di Pi Network versi asli, ini memerlukan pembayaran 0.001 Pi)\n\nFitur:\n✅ Adzan Otomatis 5 Waktu\n✅ Statistik Lengkap\n✅ Custom Themes\n✅ Cloud Sync\n✅ Donasi Sosial Auto')) {
     return;
   }
   
   showLoading(true);
   
-  const paymentData = {
-    amount: 0.001,
-    memo: "TASBIH_LUME_PLUS",
-    metadata: {
-      userId: user.uid,
-      username: user.username,
-      product: "lume_plus",
-      timestamp: Date.now()
-    }
-  };
-  
-  const paymentCallbacks = {
-    onReadyForServerApproval: (paymentId) => {
-      console.log('Payment ready for server approval:', paymentId);
-      approvePaymentOnServer(paymentId);
-    },
+  // Simulate payment processing
+  setTimeout(() => {
+    premium = true;
+    paymentId = 'demo_payment_' + Date.now();
+    saveState();
     
-    onReadyForServerCompletion: (paymentId, txid) => {
-      console.log('Payment ready for completion:', paymentId, txid);
-      completePaymentOnServer(paymentId, txid);
-    },
-    
-    onCancel: (paymentId) => {
-      console.log('Payment cancelled:', paymentId);
-      showToast('Pembayaran dibatalkan', 'error');
-      showLoading(false);
-    },
-    
-    onError: (error, payment) => {
-      console.error('Payment error:', error, payment);
-      showToast('Pembayaran gagal. Silakan coba lagi.', 'error');
-      showLoading(false);
-    }
-  };
-  
-  try {
-    Pi.createPayment(paymentData, paymentCallbacks);
-  } catch (error) {
-    console.error('Error creating payment:', error);
-    showToast('Gagal membuat pembayaran. Silakan coba lagi.', 'error');
     showLoading(false);
-  }
-}
-
-// ===== Approve Payment on Server =====
-async function approvePaymentOnServer(pId) {
-  try {
-    console.log('Calling backend to approve payment...');
-    const response = await fetch(`${BACKEND_URL}?action=approve`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        paymentId: pId,
-        userId: user.uid
-      })
-    });
+    showToast('🎉 LUME+ Premium aktif (Demo)!', 'success');
     
-    const data = await response.json();
-    console.log('Backend response:', data);
+    // Update UI
+    showPremiumBadge();
+    showTasbih();
+    document.getElementById('premiumPanel').style.display = 'block';
     
-    if (data.success) {
-      console.log('Server approved payment, calling Pi.approvePayment...');
-      Pi.approvePayment(pId, (approved) => {
-        console.log('Pi Network approved:', approved);
-      });
-    } else {
-      throw new Error(data.error || 'Server approval failed');
+    // Update button
+    document.getElementById('lumeBtn').innerHTML = `
+      <span class="btn-icon">✅</span> LUME+ Aktif (Demo)
+      <small>Semua fitur premium tersedia</small>
+    `;
+    
+    // Initialize premium features
+    if (typeof initAdzan === 'function') {
+      initAdzan();
     }
-  } catch (error) {
-    console.error('Error approving on server:', error);
-    showToast('Gagal memverifikasi pembayaran: ' + error.message, 'error');
-    showLoading(false);
-  }
-}
-
-// ===== Complete Payment on Server =====
-async function completePaymentOnServer(pId, txid) {
-  try {
-    console.log('Calling backend to complete payment...');
-    const response = await fetch(`${BACKEND_URL}?action=complete`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        paymentId: pId,
-        txid: txid
-      })
-    });
-    
-    const data = await response.json();
-    console.log('Backend response:', data);
-    
-    if (data.success) {
-      console.log('Server completed payment, calling Pi.completePayment...');
-      Pi.completePayment(pId, txid, (completed) => {
-        console.log('Payment completed:', completed);
-        activatePremium(pId);
-      });
-    } else {
-      throw new Error(data.error || 'Server completion failed');
-    }
-  } catch (error) {
-    console.error('Error completing on server:', error);
-    showToast('Gagal menyelesaikan pembayaran: ' + error.message, 'error');
-    showLoading(false);
-  }
-}
-
-// ===== Activate Premium =====
-function activatePremium(pId) {
-  premium = true;
-  paymentId = pId;
-  saveState();
-  
-  showLoading(false);
-  showToast('🎉 LUME+ Premium aktif!', 'success');
-  
-  showPremiumBadge();
-  showTasbih();
-  document.getElementById('premiumPanel').style.display = 'block';
-  
-  document.getElementById('lumeBtn').innerHTML = `
-    <span class="btn-icon">✅</span> LUME+ Aktif
-    <small>Semua fitur premium tersedia</small>
-  `;
-  
-  if (typeof initAdzan === 'function') {
-    initAdzan();
-  }
+  }, 1500);
 }
 
 // ===== Show Premium Badge =====
@@ -291,6 +184,7 @@ function showPremiumBadge() {
 function showTasbih() {
   document.getElementById('tasbihSection').style.display = 'block';
   
+  // Scroll to tasbih section
   setTimeout(() => {
     document.getElementById('tasbihSection').scrollIntoView({
       behavior: 'smooth',
