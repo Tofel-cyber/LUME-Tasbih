@@ -3,170 +3,57 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <meta name="description" content="LUME Tasbih - Aplikasi tasbih digital dengan fitur premium di Pi Network" />
+  <meta name="description" content="LUME Tasbih - Aplikasi tasbih digital Pi Network" />
   <meta name="theme-color" content="#0f172a" />
   <title>🕌 LUME Tasbih</title>
-  
+
   <!-- Pi SDK -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <script>Pi.init({ version: "2.0" });</script>
-  
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      if (window.Pi) {
+        Pi.init({
+          version: "2.0",
+          sandbox: true // 🔥 WAJIB UNTUK TESTNET
+        });
+        console.log("✅ Pi SDK initialized");
+      } else {
+        console.error("❌ Pi SDK gagal dimuat");
+      }
+    });
+  </script>
+
   <!-- Styles -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Header -->
-  <header>
-    <h1>🕌 LUME Tasbih</h1>
-    <p id="status" class="status">Assalamu'alaikum</p>
-    <p id="userInfo" class="user-info" style="display:none;"></p>
-  </header>
+<header>
+  <h1>🕌 LUME Tasbih</h1>
+  <p id="status">Assalamu'alaikum</p>
+  <p id="userInfo" style="display:none;"></p>
+</header>
 
-  <!-- Login Section -->
-  <div id="loginSection" class="section">
-    <button class="btn-login" onclick="login()" id="loginBtn">
-      <span class="btn-icon">🔐</span> Login dengan Pi Network
-    </button>
-    <p class="info-text">Login untuk unlock fitur premium</p>
-  </div>
+<section id="loginSection">
+  <button onclick="login()" id="loginBtn">
+    🔐 Login dengan Pi Network
+  </button>
+  <p>Login untuk membuka fitur</p>
+</section>
 
-  <!-- Mode Selection -->
-  <div id="modeSection" class="section" style="display:none;">
-    <h3>Pilih Mode Tasbih</h3>
-    
-    <button class="btn-free" onclick="startFree()">
-      <span class="btn-icon">🆓</span> Tasbih Gratis
-      <small>Counter & Vibration</small>
-    </button>
-    
-    <button class="btn-lume" onclick="startLume()" id="lumeBtn">
-      <span class="btn-icon">⭐</span> LUME+ Premium
-      <small>Adzan Otomatis + Statistik + Themes</small>
-    </button>
-    
-    <div id="premiumBadge" class="premium-badge" style="display:none;">
-      ✅ LUME+ Aktif
-    </div>
-  </div>
+<section id="modeSection" style="display:none;">
+  <button onclick="startFree()">🆓 Tasbih Gratis</button>
+  <button onclick="startPremium()">⭐ LUME+ Premium</button>
+</section>
 
-  <!-- Tasbih Counter -->
-  <div id="tasbihSection" class="section" style="display:none;">
-    <div class="counter-container">
-      <div class="counter" id="count">0</div>
-      <div class="target-info" id="targetInfo">Target: 33</div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
-      </div>
-    </div>
+<section id="tasbihSection" style="display:none;">
+  <h2 id="count">0</h2>
+  <button onclick="tap()">➕ Zikir</button>
+  <button onclick="reset()">🔄 Reset</button>
+</section>
 
-    <div class="tasbih-controls">
-      <button class="tap" onclick="tap()" id="tapBtn">
-        <span class="tap-icon">➕</span>
-        <span class="tap-text">Zikir</span>
-      </button>
-      
-      <div class="control-row">
-        <button class="btn-secondary" onclick="setTarget()" id="targetBtn">
-          🎯 Target
-        </button>
-        <button class="reset" onclick="reset()">
-          🔄 Reset
-        </button>
-      </div>
-    </div>
-
-    <!-- Stats Preview -->
-    <div class="stats-preview" id="statsPreview">
-      <div class="stat-item">
-        <span class="stat-label">Hari ini</span>
-        <span class="stat-value" id="todayCount">0</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Total</span>
-        <span class="stat-value" id="totalCount">0</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Premium Features Panel -->
-  <div id="premiumPanel" class="section" style="display:none;">
-    <h3>✨ Fitur LUME+</h3>
-    
-    <button class="btn-premium" onclick="toggleAdzan()">
-      <span id="adzanIcon">🔕</span> <span id="adzanText">Aktifkan Adzan Otomatis</span>
-    </button>
-    
-    <button class="btn-premium" onclick="showStats()">
-      📊 Lihat Statistik Lengkap
-    </button>
-    
-    <button class="btn-premium" onclick="changeTheme()">
-      🎨 Ganti Theme
-    </button>
-    
-    <button class="btn-premium" onclick="showDonasi()">
-      🤍 Donasi Sosial
-    </button>
-  </div>
-
-  <!-- Modal for Stats -->
-  <div id="statsModal" class="modal" style="display:none;">
-    <div class="modal-content">
-      <span class="modal-close" onclick="closeModal('statsModal')">&times;</span>
-      <h2>📊 Statistik Zikir</h2>
-      <div id="statsContent"></div>
-    </div>
-  </div>
-
-  <!-- Modal for Donasi -->
-  <div id="donasiModal" class="modal" style="display:none;">
-    <div class="modal-content">
-      <span class="modal-close" onclick="closeModal('donasiModal')">&times;</span>
-      <h2>🤍 Donasi Sosial</h2>
-      <div id="donasiContent">
-        <p>Sebagian dari setiap zikir Anda akan didonasikan untuk:</p>
-        <ul class="donasi-list">
-          <li>🕌 Pembangunan Masjid</li>
-          <li>📚 Pendidikan Anak Yatim</li>
-          <li>🍚 Bantuan Pangan</li>
-        </ul>
-        <button class="btn-lume" onclick="enableDonasi()">Aktifkan Donasi Auto</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal for Target Setting -->
-  <div id="targetModal" class="modal" style="display:none;">
-    <div class="modal-content">
-      <span class="modal-close" onclick="closeModal('targetModal')">&times;</span>
-      <h2>🎯 Set Target Zikir</h2>
-      <div class="target-options">
-        <button onclick="setCustomTarget(33)">33 (Subhanallah)</button>
-        <button onclick="setCustomTarget(99)">99 (Asmaul Husna)</button>
-        <button onclick="setCustomTarget(100)">100</button>
-        <button onclick="setCustomTarget(1000)">1000</button>
-      </div>
-      <input type="number" id="customTargetInput" placeholder="Custom target..." />
-      <button class="btn-lume" onclick="applyCustomTarget()">Set Target</button>
-    </div>
-  </div>
-
-  <!-- Loading Overlay -->
-  <div id="loadingOverlay" class="loading-overlay" style="display:none;">
-    <div class="spinner"></div>
-    <p>Loading...</p>
-  </div>
-
-  <!-- Toast Notification -->
-  <div id="toast" class="toast"></div>
-
-  <!-- Scripts -->
-  <script src="app.js"></script>
-  <script src="tasbih.js"></script>
-  <script src="adzan-auto.js"></script>
-  <script src="donasi.js"></script>
-  <script src="stats.js"></script>
+<script src="app.js"></script>
+<script src="tasbih.js"></script>
 
 </body>
 </html>
