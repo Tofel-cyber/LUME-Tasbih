@@ -1,41 +1,36 @@
-let user = null;
-
-// ===== LOGIN PI =====
 function login() {
+  const btn = document.getElementById("loginBtn");
+
   if (!window.Pi) {
-    alert("❌ Pi SDK belum siap. Buka lewat Pi Browser.");
+    alert("❌ Harus dibuka lewat Pi Browser");
     return;
   }
 
+  btn.disabled = true;
+
   Pi.authenticate(
     ["username", "payments"],
-    function (auth) {
-      console.log("✅ LOGIN BERHASIL:", auth);
-      user = auth.user;
+    (auth) => {
+      console.log("✅ Login sukses:", auth);
+
+      const user = auth.user;
 
       document.getElementById("status").innerText =
         "Assalamu'alaikum, " + user.username;
 
       document.getElementById("userInfo").innerText =
         "👤 " + user.username;
-      document.getElementById("userInfo").style.display = "block";
 
+      document.getElementById("userInfo").style.display = "block";
       document.getElementById("loginSection").style.display = "none";
       document.getElementById("modeSection").style.display = "block";
+
+      btn.disabled = false;
     },
-    function (error) {
-      console.error("❌ LOGIN GAGAL:", error);
-      alert("Login Pi gagal:\n" + JSON.stringify(error));
+    (err) => {
+      console.error("❌ Login gagal:", err);
+      alert("Login Pi dibatalkan / gagal");
+      btn.disabled = false;
     }
   );
-}
-
-// ===== MODE =====
-function startFree() {
-  document.getElementById("tasbihSection").style.display = "block";
-}
-
-function startPremium() {
-  alert("Premium akan aktif via Pi Payment (next step)");
-  document.getElementById("tasbihSection").style.display = "block";
 }

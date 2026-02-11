@@ -2,58 +2,68 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+  />
   <meta name="description" content="LUME Tasbih - Aplikasi tasbih digital Pi Network" />
   <meta name="theme-color" content="#0f172a" />
   <title>🕌 LUME Tasbih</title>
 
-  <!-- Pi SDK -->
+  <!-- Pi SDK (WAJIB) -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <header>
+    <h1>🕌 LUME Tasbih</h1>
+    <p id="status">Assalamu'alaikum</p>
+    <p id="userInfo" style="display:none;"></p>
+  </header>
+
+  <section id="loginSection">
+    <button id="loginBtn" onclick="login()">
+      🔐 Login dengan Pi Network
+    </button>
+    <p>Login untuk membuka fitur</p>
+  </section>
+
+  <section id="modeSection" style="display:none;">
+    <button onclick="startFree()">🆓 Tasbih Gratis</button>
+    <button onclick="startPremium()">⭐ LUME+ Premium</button>
+  </section>
+
+  <section id="tasbihSection" style="display:none;">
+    <h2 id="count">0</h2>
+    <button onclick="tap()">➕ Zikir</button>
+    <button onclick="reset()">🔄 Reset</button>
+  </section>
+
+  <!-- Init Pi SDK (HARUS DI AKHIR BODY) -->
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      if (window.Pi) {
-        Pi.init({
-          version: "2.0",
-          sandbox: true // 🔥 WAJIB UNTUK TESTNET
-        });
-        console.log("✅ Pi SDK initialized");
-      } else {
-        console.error("❌ Pi SDK gagal dimuat");
+    document.addEventListener("DOMContentLoaded", () => {
+      if (!window.Pi) {
+        console.error("❌ Pi SDK tidak tersedia");
+        alert("Harus dibuka lewat Pi Browser");
+        return;
       }
+
+      Pi.init({
+        version: "2.0",
+        sandbox: false // ✅ DOMAIN SUDAH VERIFIED
+      });
+
+      console.log("✅ Pi SDK siap");
     });
   </script>
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-<header>
-  <h1>🕌 LUME Tasbih</h1>
-  <p id="status">Assalamu'alaikum</p>
-  <p id="userInfo" style="display:none;"></p>
-</header>
-
-<section id="loginSection">
-  <button onclick="login()" id="loginBtn">
-    🔐 Login dengan Pi Network
-  </button>
-  <p>Login untuk membuka fitur</p>
-</section>
-
-<section id="modeSection" style="display:none;">
-  <button onclick="startFree()">🆓 Tasbih Gratis</button>
-  <button onclick="startPremium()">⭐ LUME+ Premium</button>
-</section>
-
-<section id="tasbihSection" style="display:none;">
-  <h2 id="count">0</h2>
-  <button onclick="tap()">➕ Zikir</button>
-  <button onclick="reset()">🔄 Reset</button>
-</section>
-
-<script src="app.js"></script>
-<script src="tasbih.js"></script>
+  <!-- App Scripts -->
+  <script src="app.js"></script>
+  <script src="tasbih.js"></script>
 
 </body>
 </html>
