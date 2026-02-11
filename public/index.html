@@ -10,7 +10,7 @@
     body { margin: 0; font-family: system-ui, sans-serif; background: linear-gradient(180deg, #0f172a, #020617); color: white; text-align: center; }
     header { padding: 40px 20px; }
     button { width: 90%; max-width: 400px; padding: 16px; font-size: 16px; border-radius: 12px; border: none; cursor: pointer; background: #2563eb; color: white; }
-    button:disabled { opacity: 0.6; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
     section { margin-top: 30px; }
     #spinner { display: none; margin: 20px; }
   </style>
@@ -20,63 +20,61 @@
     <h1>🕌 LUME Tasbih</h1>
     <p id="status">Assalamu’alaikum</p>
   </header>
+
   <section id="loginSection">
-    <button id="loginBtn">🔐 Login dengan Pi Network</button>
-    <p>WAJIB dibuka lewat Pi Browser</p>
+    <button id="loginBtn" disabled>🔐 Login dengan Pi Network</button>
+    <p>WAJIB dibuka lewat Pi Browser dan tunggu tombol login aktif</p>
     <div id="spinner">⏳ Loading...</div>
   </section>
+
   <section id="modeSection" style="display:none;">
     <p>✅ Login berhasil</p>
   </section>
 
   <script>
     let piReady = false;
-    let authTimeout;  // Untuk timeout manual
 
-    // Fungsi init dengan Pi.onReady untuk memastikan SDK siap
+    const btn = document.getElementById("loginBtn");
+    const status = document.getElementById("status");
+    const spinner = document.getElementById("spinner");
+
     function initPi() {
       if (window.Pi) {
-        Pi.init({ version: "2.0", sandbox: false });  // Eksplisit sandbox: false untuk production
+        Pi.init({ version: "2.0", sandbox: false });
         Pi.onReady(() => {
           piReady = true;
+          btn.disabled = false; // Aktifkan tombol setelah SDK siap
+          status.innerText = "Siap login Pi Network";
           console.log("✅ Pi SDK initialized and ready");
-          document.getElementById("status").innerText = "Siap login Pi Network";
         });
       } else {
         alert("❌ Buka dari Pi Browser! Update Pi App jika stuck.");
       }
     }
 
-    // Tunggu SDK load
     window.addEventListener('load', initPi);
 
-    document.getElementById("loginBtn").addEventListener("click", () => {
+    btn.addEventListener("click", () => {
       if (!piReady || !window.Pi) {
         alert("Pi SDK belum siap. Refresh halaman.");
         return;
       }
 
-      const btn = document.getElementById("loginBtn");
-      const status = document.getElementById("status");
-      const spinner = document.getElementById("spinner");
-
       btn.disabled = true;
       status.innerText = "Meminta login Pi… JANGAN tutup popup!";
       spinner.style.display = "block";
 
-      // Set timeout 30 detik untuk menghindari stuck abadi
-      authTimeout = setTimeout(() => {
-        console.error("❌ Auth timeout");
+      const authTimeout = setTimeout(() => {
         alert("❌ Login timeout. Coba lagi atau update Pi Browser.");
         status.innerText = "Assalamu’alaikum";
         btn.disabled = false;
         spinner.style.display = "none";
-      }, 30000);  // 30 detik
+      }, 30000); // 30 detik timeout
 
       Pi.authenticate(
-        ["username"],  // Scope minimal
+        ["username"], // Scope minimal
         (auth) => {
-          clearTimeout(authTimeout);  // Hapus timeout jika sukses
+          clearTimeout(authTimeout);
           console.log("✅ LOGIN SUCCESS", auth);
           status.innerText = "Assalamu’alaikum, " + auth.user.username;
           document.getElementById("loginSection").style.display = "none";
@@ -84,9 +82,9 @@
           spinner.style.display = "none";
         },
         (err) => {
-          clearTimeout(authTimeout);  // Hapus timeout jika error
+          clearTimeout(authTimeout);
           console.error("❌ LOGIN ERROR", err);
-          const msg = err.code === "No minimal requirements" ? "Update Pi Browser!" : "Login dibatalkan/gagal. Pastikan approve popup.";
+          const msg = err.code === "No minimal requirements" ? "Update Pi Browser!" : "Login dibatalkan/gagal.";
           alert("❌ " + msg);
           status.innerText = "Assalamu’alaikum";
           btn.disabled = false;
