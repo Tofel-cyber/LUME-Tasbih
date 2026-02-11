@@ -31,14 +31,17 @@
 
   <script>
     let piReady = false;
+    let authTimeout;  // Untuk timeout manual
 
-    // Init dengan delay dan tanpa sandbox (prod)
+    // Fungsi init dengan Pi.onReady untuk memastikan SDK siap
     function initPi() {
       if (window.Pi) {
-        Pi.init({ version: "2.0" });  // Tanpa sandbox untuk prod [web:20]
-        piReady = true;
-        console.log("✅ Pi SDK initialized");
-        document.getElementById("status").innerText = "Siap login Pi Network";
+        Pi.init({ version: "2.0", sandbox: false });  // Eksplisit sandbox: false untuk production
+        Pi.onReady(() => {
+          piReady = true;
+          console.log("✅ Pi SDK initialized and ready");
+          document.getElementById("status").innerText = "Siap login Pi Network";
+        });
       } else {
         alert("❌ Buka dari Pi Browser! Update Pi App jika stuck.");
       }
@@ -61,9 +64,19 @@
       status.innerText = "Meminta login Pi… JANGAN tutup popup!";
       spinner.style.display = "block";
 
+      // Set timeout 30 detik untuk menghindari stuck abadi
+      authTimeout = setTimeout(() => {
+        console.error("❌ Auth timeout");
+        alert("❌ Login timeout. Coba lagi atau update Pi Browser.");
+        status.innerText = "Assalamu’alaikum";
+        btn.disabled = false;
+        spinner.style.display = "none";
+      }, 30000);  // 30 detik
+
       Pi.authenticate(
-        ["username"],  // Scope minimal [web:20]
+        ["username"],  // Scope minimal
         (auth) => {
+          clearTimeout(authTimeout);  // Hapus timeout jika sukses
           console.log("✅ LOGIN SUCCESS", auth);
           status.innerText = "Assalamu’alaikum, " + auth.user.username;
           document.getElementById("loginSection").style.display = "none";
@@ -71,8 +84,9 @@
           spinner.style.display = "none";
         },
         (err) => {
+          clearTimeout(authTimeout);  // Hapus timeout jika error
           console.error("❌ LOGIN ERROR", err);
-          const msg = err.code === "No minimal requirements" ? "Update Pi Browser!" : "Login dibatalkan/gagal";
+          const msg = err.code === "No minimal requirements" ? "Update Pi Browser!" : "Login dibatalkan/gagal. Pastikan approve popup.";
           alert("❌ " + msg);
           status.innerText = "Assalamu’alaikum";
           btn.disabled = false;
