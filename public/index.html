@@ -1,97 +1,756 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0f172a" />
-  <title>LUME Tasbih</title>
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <style>
-    body { margin: 0; font-family: system-ui, sans-serif; background: linear-gradient(180deg, #0f172a, #020617); color: white; text-align: center; }
-    header { padding: 40px 20px; }
-    button { width: 90%; max-width: 400px; padding: 16px; font-size: 16px; border-radius: 12px; border: none; cursor: pointer; background: #2563eb; color: white; }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
-    section { margin-top: 30px; }
-    #spinner { display: none; margin: 20px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasbih Digital - Pi Network</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .user-info.hidden {
+            display: none;
+        }
+
+        .user-info p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .user-info strong {
+            color: #333;
+        }
+
+        .auth-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .auth-section.hidden {
+            display: none;
+        }
+
+        .btn-auth {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        .btn-auth:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-auth:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .tasbih-section {
+            margin-bottom: 20px;
+        }
+
+        .tasbih-section.hidden {
+            display: none;
+        }
+
+        .counter-display {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .counter-display h2 {
+            color: #333;
+            font-size: 80px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .counter-display p {
+            color: #666;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .tasbih-button {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 auto;
+            display: block;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transition: all 0.2s;
+        }
+
+        .tasbih-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            border-radius: 5px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-control {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .btn-reset {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #ff5252;
+        }
+
+        .btn-target {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .btn-target:hover {
+            background: #45b7af;
+        }
+
+        .donation-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .donation-section.hidden {
+            display: none;
+        }
+
+        .donation-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .donation-amounts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-amount {
+            padding: 10px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-amount:hover, .btn-amount.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .custom-amount {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .btn-donate {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-donate:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-donate:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-message.hidden {
+            display: none;
+        }
+
+        .achievement {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            color: white;
+            border-radius: 10px;
+            margin-top: 15px;
+            animation: slideIn 0.5s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .achievement.hidden {
+            display: none;
+        }
+
+        .dzikir-list {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .dzikir-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dzikir-item:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .dzikir-item.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>🕌 LUME Tasbih</h1>
-    <p id="status">Assalamu’alaikum</p>
-  </header>
+    <div class="container">
+        <div class="header">
+            <h1>🕌 Tasbih Digital</h1>
+            <p style="color: #666;">Powered by Pi Network</p>
+        </div>
 
-  <section id="loginSection">
-    <button id="loginBtn" disabled>🔐 Login dengan Pi Network</button>
-    <p>WAJIB dibuka lewat Pi Browser dan tunggu tombol login aktif</p>
-    <div id="spinner">⏳ Loading...</div>
-  </section>
+        <!-- Section Autentikasi -->
+        <div class="auth-section" id="authSection">
+            <p style="margin-bottom: 15px; color: #666;">
+                Login dengan Pi Network untuk menggunakan tasbih dan berdonasi
+            </p>
+            <button class="btn-auth" id="btnAuth">
+                🔐 Login dengan Pi Network
+            </button>
+        </div>
 
-  <section id="modeSection" style="display:none;">
-    <p>✅ Login berhasil</p>
-  </section>
+        <!-- Info User -->
+        <div class="user-info hidden" id="userInfo">
+            <p><strong>Username:</strong> <span id="username">-</span></p>
+            <p><strong>User ID:</strong> <span id="userId">-</span></p>
+        </div>
 
-  <script>
-    let piReady = false;
+        <!-- Section Tasbih -->
+        <div class="tasbih-section hidden" id="tasbihSection">
+            <!-- Dzikir List -->
+            <div class="dzikir-list">
+                <h3 style="color: #667eea; margin-bottom: 10px;">Pilih Dzikir:</h3>
+                <div class="dzikir-item active" data-dzikir="Subhanallah" data-target="33">
+                    Subhanallah (33x)
+                </div>
+                <div class="dzikir-item" data-dzikir="Alhamdulillah" data-target="33">
+                    Alhamdulillah (33x)
+                </div>
+                <div class="dzikir-item" data-dzikir="Allahu Akbar" data-target="34">
+                    Allahu Akbar (34x)
+                </div>
+                <div class="dzikir-item" data-dzikir="Astagfirullah" data-target="100">
+                    Astagfirullah (100x)
+                </div>
+                <div class="dzikir-item" data-dzikir="La ilaha illallah" data-target="100">
+                    La ilaha illallah (100x)
+                </div>
+            </div>
 
-    const btn = document.getElementById("loginBtn");
-    const status = document.getElementById("status");
-    const spinner = document.getElementById("spinner");
+            <!-- Counter Display -->
+            <div class="counter-display">
+                <p id="dzikirName">Subhanallah</p>
+                <h2 id="counter">0</h2>
+                <p>Target: <span id="target">33</span></p>
+            </div>
 
-    function initPi() {
-      if (window.Pi) {
-        Pi.init({ version: "2.0", sandbox: false });
-        Pi.onReady(() => {
-          piReady = true;
-          btn.disabled = false; // Aktifkan tombol setelah SDK siap
-          status.innerText = "Siap login Pi Network";
-          console.log("✅ Pi SDK initialized and ready");
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+
+            <!-- Tasbih Button -->
+            <button class="tasbih-button" id="tasbihBtn">
+                TAP
+            </button>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button class="btn-control btn-reset" id="btnReset">
+                    🔄 Reset
+                </button>
+                <button class="btn-control btn-target" id="btnTarget">
+                    🎯 Ubah Target
+                </button>
+            </div>
+
+            <!-- Achievement -->
+            <div class="achievement hidden" id="achievement">
+                🎉 Alhamdulillah! Target tercapai!
+            </div>
+        </div>
+
+        <!-- Section Donasi -->
+        <div class="donation-section hidden" id="donationSection">
+            <h3>💝 Donasi (Opsional)</h3>
+            <p style="text-align: center; color: #666; margin-bottom: 15px; font-size: 14px;">
+                Dukung pengembangan aplikasi ini
+            </p>
+            
+            <div class="donation-amounts">
+                <button class="btn-amount" data-amount="0.1">0.1 π</button>
+                <button class="btn-amount" data-amount="0.5">0.5 π</button>
+                <button class="btn-amount" data-amount="1">1 π</button>
+                <button class="btn-amount" data-amount="2">2 π</button>
+                <button class="btn-amount" data-amount="5">5 π</button>
+                <button class="btn-amount" data-amount="10">10 π</button>
+            </div>
+
+            <input 
+                type="number" 
+                class="custom-amount" 
+                id="customAmount" 
+                placeholder="Atau masukkan jumlah lain..."
+                step="0.01"
+                min="0.01"
+            >
+
+            <button class="btn-donate" id="btnDonate">
+                💰 Kirim Donasi
+            </button>
+
+            <div class="status-message hidden" id="statusMessage"></div>
+        </div>
+    </div>
+
+    <!-- Pi Network SDK -->
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+        // Konfigurasi
+        const CONFIG = {
+            piVersion: "2.0",
+            sandbox: true // Ubah ke false untuk production
+        };
+
+        // State Management
+        let state = {
+            authenticated: false,
+            user: null,
+            count: 0,
+            target: 33,
+            currentDzikir: "Subhanallah",
+            selectedAmount: null
+        };
+
+        // DOM Elements
+        const elements = {
+            authSection: document.getElementById('authSection'),
+            btnAuth: document.getElementById('btnAuth'),
+            userInfo: document.getElementById('userInfo'),
+            username: document.getElementById('username'),
+            userId: document.getElementById('userId'),
+            tasbihSection: document.getElementById('tasbihSection'),
+            donationSection: document.getElementById('donationSection'),
+            counter: document.getElementById('counter'),
+            target: document.getElementById('target'),
+            dzikirName: document.getElementById('dzikirName'),
+            progressFill: document.getElementById('progressFill'),
+            tasbihBtn: document.getElementById('tasbihBtn'),
+            btnReset: document.getElementById('btnReset'),
+            btnTarget: document.getElementById('btnTarget'),
+            achievement: document.getElementById('achievement'),
+            btnDonate: document.getElementById('btnDonate'),
+            customAmount: document.getElementById('customAmount'),
+            statusMessage: document.getElementById('statusMessage'),
+            dzikirItems: document.querySelectorAll('.dzikir-item'),
+            amountButtons: document.querySelectorAll('.btn-amount')
+        };
+
+        // Initialize Pi SDK
+        let Pi;
+        window.addEventListener('load', async () => {
+            try {
+                Pi = window.Pi;
+                Pi.init({ version: CONFIG.piVersion });
+                console.log('Pi SDK initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize Pi SDK:', error);
+                showStatus('Gagal menginisialisasi Pi SDK. Silakan refresh halaman.', 'error');
+            }
         });
-      } else {
-        alert("❌ Buka dari Pi Browser! Update Pi App jika stuck.");
-      }
-    }
 
-    window.addEventListener('load', initPi);
+        // Authentication
+        async function authenticateUser() {
+            try {
+                elements.btnAuth.disabled = true;
+                elements.btnAuth.textContent = 'Memproses...';
 
-    btn.addEventListener("click", () => {
-      if (!piReady || !window.Pi) {
-        alert("Pi SDK belum siap. Refresh halaman.");
-        return;
-      }
+                const scopes = ['payments'];
+                const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                
+                state.authenticated = true;
+                state.user = auth.user;
+                
+                // Update UI
+                elements.authSection.classList.add('hidden');
+                elements.userInfo.classList.remove('hidden');
+                elements.tasbihSection.classList.remove('hidden');
+                elements.donationSection.classList.remove('hidden');
+                
+                elements.username.textContent = auth.user.username;
+                elements.userId.textContent = auth.user.uid;
 
-      btn.disabled = true;
-      status.innerText = "Meminta login Pi… JANGAN tutup popup!";
-      spinner.style.display = "block";
-
-      const authTimeout = setTimeout(() => {
-        alert("❌ Login timeout. Coba lagi atau update Pi Browser.");
-        status.innerText = "Assalamu’alaikum";
-        btn.disabled = false;
-        spinner.style.display = "none";
-      }, 30000); // 30 detik timeout
-
-      Pi.authenticate(
-        ["username"], // Scope minimal
-        (auth) => {
-          clearTimeout(authTimeout);
-          console.log("✅ LOGIN SUCCESS", auth);
-          status.innerText = "Assalamu’alaikum, " + auth.user.username;
-          document.getElementById("loginSection").style.display = "none";
-          document.getElementById("modeSection").style.display = "block";
-          spinner.style.display = "none";
-        },
-        (err) => {
-          clearTimeout(authTimeout);
-          console.error("❌ LOGIN ERROR", err);
-          const msg = err.code === "No minimal requirements" ? "Update Pi Browser!" : "Login dibatalkan/gagal.";
-          alert("❌ " + msg);
-          status.innerText = "Assalamu’alaikum";
-          btn.disabled = false;
-          spinner.style.display = "none";
+                console.log('User authenticated:', auth.user);
+                showStatus('Login berhasil! Selamat berdzikir 🤲', 'success');
+                
+            } catch (error) {
+                console.error('Authentication failed:', error);
+                showStatus('Login gagal. Silakan coba lagi.', 'error');
+                elements.btnAuth.disabled = false;
+                elements.btnAuth.textContent = '🔐 Login dengan Pi Network';
+            }
         }
-      );
-    });
-  </script>
+
+        // Handle incomplete payment
+        function onIncompletePaymentFound(payment) {
+            console.log('Incomplete payment found:', payment);
+            showStatus('Ada pembayaran yang belum selesai. Silakan cek wallet Anda.', 'info');
+        }
+
+        // Tasbih Functions
+        function updateCounter() {
+            elements.counter.textContent = state.count;
+            const progress = Math.min((state.count / state.target) * 100, 100);
+            elements.progressFill.style.width = progress + '%';
+
+            // Check if target reached
+            if (state.count === state.target) {
+                showAchievement();
+                playVibration();
+            }
+        }
+
+        function incrementCounter() {
+            state.count++;
+            updateCounter();
+            playVibration();
+        }
+
+        function resetCounter() {
+            state.count = 0;
+            updateCounter();
+            elements.achievement.classList.add('hidden');
+        }
+
+        function changeTarget() {
+            const newTarget = prompt('Masukkan target baru:', state.target);
+            if (newTarget && !isNaN(newTarget) && newTarget > 0) {
+                state.target = parseInt(newTarget);
+                elements.target.textContent = state.target;
+                updateCounter();
+            }
+        }
+
+        function showAchievement() {
+            elements.achievement.classList.remove('hidden');
+            setTimeout(() => {
+                elements.achievement.classList.add('hidden');
+            }, 3000);
+        }
+
+        function playVibration() {
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        }
+
+        // Dzikir Selection
+        elements.dzikirItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Remove active class from all
+                elements.dzikirItems.forEach(i => i.classList.remove('active'));
+                // Add active class to clicked
+                item.classList.add('active');
+                
+                // Update state
+                state.currentDzikir = item.dataset.dzikir;
+                state.target = parseInt(item.dataset.target);
+                
+                // Update UI
+                elements.dzikirName.textContent = state.currentDzikir;
+                elements.target.textContent = state.target;
+                
+                // Reset counter
+                resetCounter();
+            });
+        });
+
+        // Donation Functions
+        elements.amountButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all
+                elements.amountButtons.forEach(b => b.classList.remove('active'));
+                // Add active to clicked
+                btn.classList.add('active');
+                
+                state.selectedAmount = parseFloat(btn.dataset.amount);
+                elements.customAmount.value = '';
+            });
+        });
+
+        elements.customAmount.addEventListener('input', (e) => {
+            // Remove active from preset buttons
+            elements.amountButtons.forEach(b => b.classList.remove('active'));
+            state.selectedAmount = parseFloat(e.target.value) || null;
+        });
+
+        async function createDonation() {
+            try {
+                const amount = state.selectedAmount || parseFloat(elements.customAmount.value);
+                
+                if (!amount || amount <= 0) {
+                    showStatus('Silakan pilih atau masukkan jumlah donasi', 'error');
+                    return;
+                }
+
+                elements.btnDonate.disabled = true;
+                elements.btnDonate.textContent = 'Memproses...';
+                
+                showStatus('Membuat pembayaran...', 'info');
+
+                const paymentData = {
+                    amount: amount,
+                    memo: `Donasi untuk Tasbih Digital - ${state.currentDzikir}`,
+                    metadata: { 
+                        dzikirType: state.currentDzikir,
+                        count: state.count,
+                        timestamp: new Date().toISOString()
+                    }
+                };
+
+                const payment = await Pi.createPayment(paymentData, {
+                    onReadyForServerApproval: function(paymentId) {
+                        console.log('Payment ready for approval:', paymentId);
+                        showStatus('Menunggu persetujuan server...', 'info');
+                        // Di sini Anda harus memanggil backend server untuk approve
+                        // Untuk demo, kita simulasikan berhasil
+                    },
+                    onReadyForServerCompletion: function(paymentId, txid) {
+                        console.log('Payment ready for completion:', paymentId, txid);
+                        showStatus('Menyelesaikan transaksi...', 'info');
+                        // Di sini Anda harus memanggil backend server untuk complete
+                        // Untuk demo, kita simulasikan berhasil
+                    },
+                    onCancel: function(paymentId) {
+                        console.log('Payment cancelled:', paymentId);
+                        showStatus('Pembayaran dibatalkan', 'error');
+                        resetDonationButton();
+                    },
+                    onError: function(error, payment) {
+                        console.error('Payment error:', error);
+                        showStatus('Terjadi kesalahan: ' + error.message, 'error');
+                        resetDonationButton();
+                    }
+                });
+
+                console.log('Payment created:', payment);
+                showStatus(`Terima kasih atas donasi Anda sebesar ${amount} π! Jazakallahu khairan 🙏`, 'success');
+                
+                // Reset
+                state.selectedAmount = null;
+                elements.customAmount.value = '';
+                elements.amountButtons.forEach(b => b.classList.remove('active'));
+                
+            } catch (error) {
+                console.error('Donation failed:', error);
+                showStatus('Donasi gagal. Silakan coba lagi.', 'error');
+            } finally {
+                resetDonationButton();
+            }
+        }
+
+        function resetDonationButton() {
+            elements.btnDonate.disabled = false;
+            elements.btnDonate.textContent = '💰 Kirim Donasi';
+        }
+
+        function showStatus(message, type) {
+            elements.statusMessage.textContent = message;
+            elements.statusMessage.className = 'status-message ' + type;
+            
+            setTimeout(() => {
+                elements.statusMessage.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Event Listeners
+        elements.btnAuth.addEventListener('click', authenticateUser);
+        elements.tasbihBtn.addEventListener('click', incrementCounter);
+        elements.btnReset.addEventListener('click', resetCounter);
+        elements.btnTarget.addEventListener('click', changeTarget);
+        elements.btnDonate.addEventListener('click', createDonation);
+
+        // Keyboard Support
+        document.addEventListener('keydown', (e) => {
+            if (state.authenticated) {
+                if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    incrementCounter();
+                } else if (e.key === 'r' || e.key === 'R') {
+                    resetCounter();
+                }
+            }
+        });
+
+        // Load saved state from localStorage
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('tasbihState');
+            if (saved) {
+                const savedState = JSON.parse(saved);
+                state.count = savedState.count || 0;
+                state.target = savedState.target || 33;
+                state.currentDzikir = savedState.currentDzikir || 'Subhanallah';
+                updateCounter();
+            }
+        });
+
+        // Save state to localStorage
+        window.addEventListener('beforeunload', () => {
+            localStorage.setItem('tasbihState', JSON.stringify({
+                count: state.count,
+                target: state.target,
+                currentDzikir: state.currentDzikir
+            }));
+        });
+    </script>
 </body>
 </html>
